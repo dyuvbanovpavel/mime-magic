@@ -1,19 +1,13 @@
 package magic;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.IOException;
 
-import magic.container.TypesContainer;
-import magic.container.TypesContainerFactory;
+import magic.container.TypesContainerImpl;
 
 public class App {
-    public static void main(String[] args) throws FileNotFoundException, IOException {
-        TypesContainerFactory f = new TypesContainerFactory();
-        TypesContainer container = f.simple();
-        String result = container.resolve(new FileInputStream(args[0]));
-        System.out.println(result);
-       
-
+    public static void main(String[] args) throws IOException {
+       MimeResolver r = new MimeResolver(TypesContainerImpl.defaultContainer());
+       System.out.println(r.confirmMimeType(new File("test.7z"), "application/x-7z-compressed"));
     }
 }

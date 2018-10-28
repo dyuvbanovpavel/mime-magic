@@ -1,38 +1,75 @@
 package magic.container;
 
-import java.io.ByteArrayInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 
-import magic.types.TypeMagic;
+import magic.types.Type;
 
 public class TypesContainerImpl implements TypesContainer {
-    private List<TypeMagic> list;
+    private List<Type> types;
 
-    public String resolve(InputStream stream) throws IOException {
-        byte[] bytes = new byte[1024];
-        stream.read(bytes);
+    private TypesContainerImpl() {
 
-        final ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+    }
 
-        String result = null;
-        for (TypeMagic magic : list) {
-            if (magic.test(bis)) {
-                result = magic.getMime();
+    private void setTypes(List<Type> types) {
+        this.types = types;
+    }
+
+    @Override
+    public Type findTypeByExtension(String extension) {
+        for (Type t : types) {
+            if (t.getExtension().equals(extension)) {
+                return t;
             }
-            bis.reset();
         }
-        return result;
+        return null;
+    }
+    
+    @Override
+    public Type findTypeByMimeType(String mimeType) {
+        for (Type t : types) {
+            if (t.getMimeType().equals(mimeType)) {
+                return t;
+            }
+        }
+        return null;
+    }
+    
+    public int longestMime() {
+        int max = 0;
+        for (Type t : types) {
+            if (t.getMagic() != null && t.getMagic().length > max) {
+                max = t.getMagic().length;
+            }
+        }
+        return max;
     }
 
-    protected TypesContainerImpl() {
-        list = new LinkedList<TypeMagic>();
-    }
+    public static TypesContainerImpl fromFile(File file) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(file));
 
-    public <T extends TypeMagic> void register(T instance) {
-        list.add(instance);
+        List<Type> types = new LinkedList<>();
+        try {
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                types.add(Type.fromString(line));
+            }
+        } finally {
+            reader.close();
+        }
+
+        TypesContainerImpl container = new TypesContainerImpl();
+        container.setTypes(types);
+        return container;
+    }
+    
+    public static TypesContainer defaultContainer() throws IOException {
+        return fromFile(new File("data.txt"));
     }
 
 }
