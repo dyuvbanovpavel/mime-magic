@@ -1,9 +1,9 @@
 package magic.container;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,7 +29,7 @@ public class TypesContainerImpl implements TypesContainer {
         }
         return null;
     }
-    
+
     @Override
     public Type findTypeByMimeType(String mimeType) {
         for (Type t : types) {
@@ -39,7 +39,7 @@ public class TypesContainerImpl implements TypesContainer {
         }
         return null;
     }
-    
+
     public int longestMime() {
         int max = 0;
         for (Type t : types) {
@@ -50,8 +50,10 @@ public class TypesContainerImpl implements TypesContainer {
         return max;
     }
 
-    public static TypesContainerImpl fromFile(File file) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
+    private static TypesContainerImpl fromInputStream(InputStream stream)
+            throws IOException {
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 
         List<Type> types = new LinkedList<>();
         try {
@@ -67,9 +69,10 @@ public class TypesContainerImpl implements TypesContainer {
         container.setTypes(types);
         return container;
     }
-    
+
     public static TypesContainer defaultContainer() throws IOException {
-        return fromFile(new File("data.txt"));
+        return fromInputStream(
+                TypesContainerImpl.class.getResourceAsStream("/data.txt"));
     }
 
 }
